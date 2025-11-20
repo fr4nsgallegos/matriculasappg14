@@ -28,19 +28,29 @@ class _HomePageState extends State<HomePage> {
     matriculas: [],
   );
 
+  List<UniversidadModel> instituciones = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          instituciones.add(tecsup);
+          setState(() {});
+        },
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ...instituciones.map((e) {
+              return Row(children: [Text(e.nombre)]);
+            }).toList(),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("${tecsup.nombre} - ${tecsup.matriculas.length}"),
-                ElevatedButton(
+                IconButton(
+                  icon: Icon(Icons.add),
                   onPressed: () {
                     PersonaModel jhonnyEstudiante = PersonaModel(
                       nombre: "Jhonny",
@@ -61,7 +71,14 @@ class _HomePageState extends State<HomePage> {
                     );
                     setState(() {});
                   },
-                  child: Text("Agregar matrícula"),
+                ),
+                IconButton(
+                  onPressed: () {
+                    tecsup.nombre = "TECSUP LIMA";
+
+                    setState(() {});
+                  },
+                  icon: Icon(Icons.edit, color: Colors.orange),
                 ),
               ],
             ),
