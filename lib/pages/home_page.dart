@@ -63,19 +63,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMatriculaTile(MatriculaModel matricula) {
+  Widget _buildMatriculaTile(
+    UniversidadModel institucion,
+    MatriculaModel matricula,
+  ) {
     return ListTile(
       title: Text(
         "${matricula.estudiante.nombre} ${matricula.estudiante.apellido}",
       ),
-      subtitle: Text(
-        "${matricula.carrera.nombre} - ${matricula.carrera.duracion}",
+      subtitle: Text("${matricula.carrera.nombre}"),
+      trailing: IconButton(
+        icon: Icon(Icons.delete, color: Colors.grey),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text("¿Eliminar matrícula?"),
+              content: Text(
+                "Se eliminará a ${matricula.estudiante.nombre} de la lista.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancelar"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    institucion.matriculas.remove(matricula);
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: Text("Eliminar", style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
   int? expandedIndex;
-
   _buildExpansionUniversidad(int index, UniversidadModel universidad) {
     return ExpansionTile(
       key: ValueKey('expansionTile_$index${expandedIndex == index}'),
@@ -88,7 +116,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {});
       },
       children: universidad.matriculas.map((matricula) {
-        return _buildMatriculaTile(matricula);
+        return _buildMatriculaTile(universidad, matricula);
       }).toList(),
     );
   }
