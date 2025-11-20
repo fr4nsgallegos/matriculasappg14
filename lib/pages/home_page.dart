@@ -48,6 +48,17 @@ class _HomePageState extends State<HomePage> {
           },
           icon: Icon(Icons.edit, color: Colors.orange),
         ),
+        IconButton(
+          onPressed: () {
+            setState(() {
+              instituciones.remove(institucion);
+              if (instituciones.isEmpty) {
+                expandedIndex = null;
+              }
+            });
+          },
+          icon: Icon(Icons.delete, color: Colors.red),
+        ),
       ],
     );
   }
