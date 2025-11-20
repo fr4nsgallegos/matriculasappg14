@@ -63,6 +63,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  _buildExpansionUniversidad(UniversidadModel universidad) {
+    return ExpansionTile(
+      title: _buildCabeceraInstitucion(universidad),
+      tilePadding: EdgeInsets.symmetric(horizontal: 32),
+      childrenPadding: EdgeInsets.symmetric(horizontal: 16),
+      children: universidad.matriculas.map((matricula) {
+        return _buildMatriculaTile(matricula);
+      }).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,10 +97,11 @@ class _HomePageState extends State<HomePage> {
             ...instituciones.map((e) {
               return Column(
                 children: [
-                  _buildCabeceraInstitucion(e),
-                  ...e.matriculas.map((matricula) {
-                    return _buildMatriculaTile(matricula);
-                  }).toList(),
+                  _buildExpansionUniversidad(e),
+                  // _buildCabeceraInstitucion(e),
+                  // ...e.matriculas.map((matricula) {
+                  //   return _buildMatriculaTile(matricula);
+                  // }).toList(),
                 ],
               );
             }).toList(),
