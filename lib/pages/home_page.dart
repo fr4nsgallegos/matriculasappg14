@@ -63,11 +63,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _buildExpansionUniversidad(UniversidadModel universidad) {
+  int? expandedIndex;
+
+  _buildExpansionUniversidad(int index, UniversidadModel universidad) {
     return ExpansionTile(
+      key: ValueKey('expansionTile_$index${expandedIndex == index}'),
+      initiallyExpanded: expandedIndex == index,
       title: _buildCabeceraInstitucion(universidad),
       tilePadding: EdgeInsets.symmetric(horizontal: 32),
       childrenPadding: EdgeInsets.symmetric(horizontal: 16),
+      onExpansionChanged: (bool isOpen) {
+        expandedIndex = isOpen ? index : null;
+        setState(() {});
+      },
       children: universidad.matriculas.map((matricula) {
         return _buildMatriculaTile(matricula);
       }).toList(),
@@ -94,17 +102,20 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ...instituciones.map((e) {
-              return Column(
-                children: [
-                  _buildExpansionUniversidad(e),
-                  // _buildCabeceraInstitucion(e),
-                  // ...e.matriculas.map((matricula) {
-                  //   return _buildMatriculaTile(matricula);
-                  // }).toList(),
-                ],
-              );
-            }).toList(),
+            for (int i = 0; i < instituciones.length; i++)
+              _buildExpansionUniversidad(i, instituciones[i]),
+
+            // ...instituciones.map((e) {
+            //   return Column(
+            //     children: [
+            //       _buildExpansionUniversidad(e),
+            //       // _buildCabeceraInstitucion(e),
+            //       // ...e.matriculas.map((matricula) {
+            //       //   return _buildMatriculaTile(matricula);
+            //       // }).toList(),
+            //     ],
+            //   );
+            // }).toList(),
           ],
         ),
       ),
