@@ -5,8 +5,6 @@ import 'package:matriculasappg14/models/persona_model.dart';
 import 'package:matriculasappg14/models/universidad_model.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -14,136 +12,113 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<UniversidadModel> instituciones = [];
 
-  void eliminarTodasLasMatriculas(UniversidadModel universidad) {
-    setState(() {
-      universidad.matriculas.clear();
-    });
-  }
+  void _editarNombreInstitucion(UniversidadModel institucion) {
+    final TextEditingController controller = TextEditingController(
+      text: institucion.nombre,
+    );
 
-  int cantidadMatriculas(UniversidadModel universidad) {
-    return universidad.matriculas.length;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            "Editar",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: "Ingresar Nuevo Nombre",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final nuevo = controller.text.trim();
+                if (nuevo.isNotEmpty) {
+                  setState(() {
+                    institucion.nombre = nuevo;
+                  });
+                }
+                Navigator.pop(context);
+              },
+              child: Text("Guardar"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildCabeceraInstitucion(UniversidadModel institucion) {
+    bool limiteMatriculas = institucion.matriculas.length >= 5;
+    bool hayMatriculas = institucion.matriculas.isNotEmpty;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("${institucion.nombre} - ${institucion.matriculas.length}"),
-        // Agregar
         IconButton(
-          icon: cantidadMatriculas(institucion) < 5
-              ? Icon(Icons.add)
-              : Icon(Icons.lock),
-          onPressed: () {
-            if (cantidadMatriculas(institucion) > 4) return;
-
-            PersonaModel jhonnyEstudiante = PersonaModel(
-              nombre: "Jhonny",
-              apellido: "Galleogos",
-              direccion: "Av 123 123",
-            );
-            CarreraModel carreraSoftware = CarreraModel(
-              "Ing. Software",
-              "5 años",
-            );
-            institucion.matriculas.add(
-              MatriculaModel(
-                fecha: "19/11/25",
-                hora: "15:30",
-                estudiante: jhonnyEstudiante,
-                carrera: carreraSoftware,
-              ),
-            );
-            setState(() {});
-          },
+          icon: Icon(limiteMatriculas ? Icons.lock : Icons.add),
+          onPressed: limiteMatriculas
+              ? null
+              : () {
+                  PersonaModel jhonnyEstudiante = PersonaModel(
+                    nombre: "Jhonny",
+                    apellido: "Galleogos",
+                    direccion: "Av 123 123",
+                  );
+                  CarreraModel carreraSoftware = CarreraModel(
+                    "Ing. Software",
+                    "5 años",
+                  );
+                  institucion.matriculas.add(
+                    MatriculaModel(
+                      fecha: "19/11/25",
+                      hora: "15:30",
+                      estudiante: jhonnyEstudiante,
+                      carrera: carreraSoftware,
+                    ),
+                  );
+                  setState(() {});
+                },
         ),
-        // Editar
+        IconButton(
+          icon: Icon(Icons.cleaning_services),
+          onPressed: !hayMatriculas
+              ? null
+              : () {
+                  _eliminarMatriculas(institucion);
+                },
+        ),
+
         IconButton(
           onPressed: () {
-            institucion.nombre = "Cambiado LIMA";
-
-            setState(() {});
+            _editarNombreInstitucion(institucion);
           },
           icon: Icon(Icons.edit, color: Colors.orange),
         ),
-        // Eliminar institucion
+
         IconButton(
           onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text("Eliminar"),
-                  content: Text("¿Deseas eliminar la institucion?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text("Cancelar"),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-
-                        setState(() {
-                          instituciones.remove(institucion);
-                          if (instituciones.isEmpty) {
-                            expandedIndex = null;
-                          }
-                        });
-                      },
-                      child: Text(
-                        "Eliminar",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+            instituciones.remove(institucion);
+            setState(() {});
           },
           icon: Icon(Icons.delete, color: Colors.red),
-        ),
-        // Eliminar todas las matriculas
-        IconButton(
-          icon: Icon(Icons.delete_forever),
-          color: cantidadMatriculas(institucion) > 0 ? Colors.redAccent : null,
-          onPressed: cantidadMatriculas(institucion) > 0
-              ? () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("Eliminar"),
-                        content: Text("¿Deseas eliminar todas las matrículas?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text("Cancelar"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              eliminarTodasLasMatriculas(institucion);
-                              Navigator.pop(context);
-                            },
-                            child: Text(
-                              "Eliminar",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              : null,
         ),
       ],
     );
   }
 
   Widget _buildMatriculaTile(
-    MatriculaModel matricula,
     UniversidadModel universidad,
+    MatriculaModel matricula,
   ) {
     return ListTile(
       title: Text(
@@ -152,32 +127,12 @@ class _HomePageState extends State<HomePage> {
       subtitle: Text(
         "${matricula.carrera.nombre} - ${matricula.carrera.duracion}",
       ),
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Eliminar"),
-              content: Text("¿Deseas eliminar esta matrícula?"),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text("Cancelar"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    //Eliminar
-                    universidad.matriculas.remove(matricula);
-                    Navigator.pop(context);
-                    setState(() {});
-                  },
-                  child: Text("Eliminar", style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      trailing: IconButton(
+        icon: Icon(Icons.delete, color: Colors.red),
+        onPressed: () {
+          _eliminacionMatricula(universidad, matricula);
+        },
+      ),
     );
   }
 
@@ -188,15 +143,82 @@ class _HomePageState extends State<HomePage> {
       key: ValueKey('expansionTile_$index${expandedIndex == index}'),
       initiallyExpanded: expandedIndex == index,
       title: _buildCabeceraInstitucion(universidad),
-      tilePadding: EdgeInsets.symmetric(horizontal: 16),
+      tilePadding: EdgeInsets.symmetric(horizontal: 32),
       childrenPadding: EdgeInsets.symmetric(horizontal: 16),
       onExpansionChanged: (bool isOpen) {
         expandedIndex = isOpen ? index : null;
         setState(() {});
       },
       children: universidad.matriculas.map((matricula) {
-        return _buildMatriculaTile(matricula, universidad);
+        return _buildMatriculaTile(universidad, matricula);
       }).toList(),
+    );
+  }
+
+  void _eliminacionMatricula(
+    UniversidadModel universidad,
+    MatriculaModel matricula,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [SizedBox(width: 5), Text("Confirmar eliminación")],
+          ),
+          content: Text(
+            "¿Estás seguro de eliminar la matrícula de "
+            "${matricula.estudiante.nombre} ${matricula.estudiante.apellido}?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancelar"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                universidad.matriculas.remove(matricula);
+                Navigator.pop(context);
+                setState(() {});
+              },
+              child: Text("Eliminar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _eliminarMatriculas(UniversidadModel universidad) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [SizedBox(width: 5), Text("Limpiar matrículas")],
+          ),
+          content: Text(
+            "¿Estás seguro de eliminar TODAS las matrículas de "
+            "${universidad.nombre}?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancelar"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                universidad.matriculas.clear();
+                Navigator.pop(context);
+                setState(() {});
+              },
+              child: Text("Eliminar todas"),
+            ),
+          ],
+        );
+      },
     );
   }
 
