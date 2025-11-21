@@ -5,6 +5,7 @@ class TextfieldPage extends StatelessWidget {
   TextEditingController _contrasenaController = TextEditingController();
   String? nombre;
   final FocusNode _focusNode = FocusNode();
+  final FocusNode _focus1 = FocusNode();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,6 +14,7 @@ class TextfieldPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              focusNode: _focus1,
               style: TextStyle(
                 color: Colors.red,
               ), //controla el color del texto ingresado por el usuario
@@ -33,6 +35,9 @@ class TextfieldPage extends StatelessWidget {
               //   print(nombre);
               // },
               controller: _nombreController,
+              onSubmitted: (value) {
+                FocusScope.of(context).requestFocus(_focusNode);
+              },
             ),
             SizedBox(height: 16),
             TextField(
@@ -59,6 +64,9 @@ class TextfieldPage extends StatelessWidget {
               //   print(nombre);
               // },
               controller: _contrasenaController,
+              onSubmitted: (value) {
+                FocusScope.of(context).unfocus();
+              },
             ),
             SizedBox(height: 32),
             ElevatedButton(

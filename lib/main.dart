@@ -4,5 +4,5 @@ import 'package:matriculasappg14/pages/home_page.dart';
 import 'package:matriculasappg14/textfield_page.dart';
 
 void main() {
-  runApp(MaterialApp(home: HomePage(), debugShowCheckedModeBanner: false));
+  runApp(MaterialApp(home: TextfieldPage(), debugShowCheckedModeBanner: false));
 }
