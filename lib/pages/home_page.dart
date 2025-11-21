@@ -5,6 +5,8 @@ import 'package:matriculasappg14/models/persona_model.dart';
 import 'package:matriculasappg14/models/universidad_model.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -12,14 +14,29 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<UniversidadModel> instituciones = [];
 
+  void eliminarTodasLasMatriculas(UniversidadModel universidad) {
+    setState(() {
+      universidad.matriculas.clear();
+    });
+  }
+
+  int cantidadMatriculas(UniversidadModel universidad) {
+    return universidad.matriculas.length;
+  }
+
   Widget _buildCabeceraInstitucion(UniversidadModel institucion) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("${institucion.nombre} - ${institucion.matriculas.length}"),
+        // Agregar
         IconButton(
-          icon: Icon(Icons.add),
+          icon: cantidadMatriculas(institucion) < 5
+              ? Icon(Icons.add)
+              : Icon(Icons.lock),
           onPressed: () {
+            if (cantidadMatriculas(institucion) > 4) return;
+
             PersonaModel jhonnyEstudiante = PersonaModel(
               nombre: "Jhonny",
               apellido: "Galleogos",
@@ -40,6 +57,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {});
           },
         ),
+        // Editar
         IconButton(
           onPressed: () {
             institucion.nombre = "Cambiado LIMA";
@@ -48,40 +66,99 @@ class _HomePageState extends State<HomePage> {
           },
           icon: Icon(Icons.edit, color: Colors.orange),
         ),
+        // Eliminar institucion
         IconButton(
           onPressed: () {
-            setState(() {
-              instituciones.remove(institucion);
-              if (instituciones.isEmpty) {
-                expandedIndex = null;
-              }
-            });
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text("Eliminar"),
+                  content: Text("¿Deseas eliminar la institucion?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Cancelar"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+
+                        setState(() {
+                          instituciones.remove(institucion);
+                          if (instituciones.isEmpty) {
+                            expandedIndex = null;
+                          }
+                        });
+                      },
+                      child: Text(
+                        "Eliminar",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
           },
           icon: Icon(Icons.delete, color: Colors.red),
+        ),
+        // Eliminar todas las matriculas
+        IconButton(
+          icon: Icon(Icons.delete_forever),
+          color: cantidadMatriculas(institucion) > 0 ? Colors.redAccent : null,
+          onPressed: cantidadMatriculas(institucion) > 0
+              ? () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Eliminar"),
+                        content: Text("¿Deseas eliminar todas las matrículas?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text("Cancelar"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              eliminarTodasLasMatriculas(institucion);
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Eliminar",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              : null,
         ),
       ],
     );
   }
 
   Widget _buildMatriculaTile(
-    UniversidadModel institucion,
     MatriculaModel matricula,
+    UniversidadModel universidad,
   ) {
     return ListTile(
       title: Text(
         "${matricula.estudiante.nombre} ${matricula.estudiante.apellido}",
       ),
-      subtitle: Text("${matricula.carrera.nombre}"),
-      trailing: IconButton(
-        icon: Icon(Icons.delete, color: Colors.grey),
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("¿Eliminar matrícula?"),
-              content: Text(
-                "Se eliminará a ${matricula.estudiante.nombre} de la lista.",
-              ),
+      subtitle: Text(
+        "${matricula.carrera.nombre} - ${matricula.carrera.duracion}",
+      ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Eliminar"),
+              content: Text("¿Deseas eliminar esta matrícula?"),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -89,34 +166,36 @@ class _HomePageState extends State<HomePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    institucion.matriculas.remove(matricula);
-                    setState(() {});
+                    //Eliminar
+                    universidad.matriculas.remove(matricula);
                     Navigator.pop(context);
+                    setState(() {});
                   },
                   child: Text("Eliminar", style: TextStyle(color: Colors.red)),
                 ),
               ],
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
   int? expandedIndex;
+
   _buildExpansionUniversidad(int index, UniversidadModel universidad) {
     return ExpansionTile(
       key: ValueKey('expansionTile_$index${expandedIndex == index}'),
       initiallyExpanded: expandedIndex == index,
       title: _buildCabeceraInstitucion(universidad),
-      tilePadding: EdgeInsets.symmetric(horizontal: 32),
+      tilePadding: EdgeInsets.symmetric(horizontal: 16),
       childrenPadding: EdgeInsets.symmetric(horizontal: 16),
       onExpansionChanged: (bool isOpen) {
         expandedIndex = isOpen ? index : null;
         setState(() {});
       },
       children: universidad.matriculas.map((matricula) {
-        return _buildMatriculaTile(universidad, matricula);
+        return _buildMatriculaTile(matricula, universidad);
       }).toList(),
     );
   }
